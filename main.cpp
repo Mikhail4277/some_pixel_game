@@ -13,9 +13,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-// Обработчик для корректного завершения программы
+
 void cleanup(int signum) {
-    // Восстанавливаем настройки терминала
+    
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
     term.c_lflag |= (ICANON | ECHO);
@@ -24,7 +24,7 @@ void cleanup(int signum) {
     exit(signum);
 }
 
-// Функция для настройки неблокирующего чтения с клавиатуры
+
 void setupNonblockingInput() {
     int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
@@ -64,7 +64,7 @@ int main() {
     while (playerHp > 0) {
         frameCount++;
         
-        // Обработка перезарядки
+        
         if (isReloading) {
             reloadTimer++;
             if (reloadTimer >= RELOAD_TIME) {
@@ -76,7 +76,7 @@ int main() {
 
         int direction = keyboard.getDirection();
         
-        // Обработка движения
+        
         if (direction == Keyboard::UP && playerY > 0) {
             playerY = playerY - 1;
             lastDirectionX = 0;
@@ -98,7 +98,7 @@ int main() {
             lastDirectionY = 0;
         }
 
-        // Обработка стрельбы
+        
         if (direction == Keyboard::SPACE) {
             if (ammo > 0 && !isReloading && bullets.size() < MAX_BULLETS) {
                 Bullet newBullet;
@@ -111,7 +111,7 @@ int main() {
             }
         }
 
-        // Спавн врагов
+        
         if (frameCount % enemySpawnDelay == 0) {
             auto it = std::find_if(enemies.begin(), enemies.end(),
                 [](const Enemy& e) { return !e.isActive(); });
@@ -120,7 +120,7 @@ int main() {
             }
         }
 
-        // Обновление пуль и проверка столкновений
+        
         bullets.erase(
             std::remove_if(bullets.begin(), bullets.end(),
                 [](const Bullet& b) { return !b.isActive(); }),
@@ -130,7 +130,7 @@ int main() {
         for (auto& bullet : bullets) {
             bullet.move();
             
-            // Проверяем попадание пули во врага
+            
             auto enemyIt = std::find_if(enemies.begin(), enemies.end(),
                 [&bullet](const Enemy& e) {
                     return e.isActive() && 
@@ -139,12 +139,12 @@ int main() {
                 });
             
             if (enemyIt != enemies.end()) {
-                *enemyIt = Enemy();  // Уничтожаем врага
-                bullet = Bullet();   // Уничтожаем пулю
+                *enemyIt = Enemy();  
+                bullet = Bullet();  
             }
         }
 
-        // Обновление врагов
+        
         for (auto& enemy : enemies) {
             if (enemy.isActive()) {
                 enemy.move(playerX, playerY);
@@ -159,7 +159,7 @@ int main() {
         screen.draw(playerX, playerY, bullets, enemies, playerHp, ammo, 
                    isReloading, reloadTimer, RELOAD_TIME);
 
-        // Контроль FPS с помощью std::chrono
+        
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto frameTime = std::chrono::duration_cast<std::chrono::microseconds>
             (currentTime - lastFrameTime).count();
